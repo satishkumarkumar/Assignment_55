@@ -1,0 +1,30 @@
+Write a common use-case, where you will use a daemon set instead of replica set.
+In daemon set will create a pod in every node running in our cluster using nodeselector 
+if we particular create pod in that node labelled with test we want to check application as testing purpose so label node with test
+eg 
+kubectl label node "workernode name" type=tester
+now 
+edit daemonset file
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tester
+spec:
+  selector:
+    matchLabels:
+      app: tester
+  template:
+    metadata:
+      labels:
+        app: tester
+    spec:
+      nodeSelector:
+        type: tester
+      containers:
+      - name: main
+        image: luksa/tester
+Pods created in worker node where labelled with tester
+
+In other hand
+
+Replicaset uses where larges number of pods are required for running.eg deployment configuration
