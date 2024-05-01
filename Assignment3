@@ -1,0 +1,13 @@
+Process steps:
+
+1.Make sure you’re connecting to the service’s cluster IP from within the cluster, not from the 
+outside.
+2.Don’t bother pinging the service IP to figure out if the service is accessible (remember, the 
+service’s cluster IP is a virtual IP and pinging it will never work).
+3.If you’ve defined a readiness probe, make sure it’s succeeding; otherwise the pod won’t be 
+part of the service.
+4.To confirm that a pod is part of the service, examine the corresponding Endpoints object with 
+kubectl get endpoints.
+5.Check whether you’re connecting to the port exposed by the service and not the target port.
+6.Try connecting to the pod IP directly to confirm your pod is accepting connections on the 
+correct port
