@@ -1,0 +1,97 @@
+1.Deleting scenerio
+if Voting pod 
+If voting pod delete if doesnt effect voting app working flow because it is first step of pushing data from voting pod to redis .When we delete voting pod replica set assign new pod instead of deleted pod for pushing role.
+
+if Worker Pod
+if we delete worker pod delete still app working is fine because replica set assign new worker pod instead of deleted worker pod
+
+Message showing in gui "Processed by container ID vote-94849dc97-rd7pd" 
+
+kubectl get pods
+[root@ip-172-31-35-2 k8s-specifications]# kubectl get pod
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-n66j6        2/2     Running   0          61m
+redis-868d64d78-frw9g     2/2     Running   0          61m
+result-5d57b59f4b-xp7kr   2/2     Running   0          61m
+vote-94849dc97-rd7pd      2/2     Running   0          61m
+worker-dd46d7584-qgpzj    2/2     Running   0          61m
+
+kubectl delete pods worker-dd46d7584-qgpzj
+[root@ip-172-31-35-2 k8s-specifications]# kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-n66j6        2/2     Running   0          64m
+redis-868d64d78-frw9g     2/2     Running   0          64m
+result-5d57b59f4b-xp7kr   2/2     Running   0          64m
+vote-94849dc97-rd7pd      2/2     Running   0          64m
+worker-dd46d7584-tz5cd    2/2     Running   0          31s
+
+Message showing in gui "Processed by container ID vote-94849dc97-rd7pd"  -still showing 
+
+in this scenerio we lost logs 
+
+
+
+if db pod
+
+if we delete db pod 
+kubectl delete pods db-b54cd94f4-n66j6
+vote result and vote app gui is opening working and other hand voting functionality working fine but other hand result is not reflecting in result gui "number of vote" is not showing.
+worker node is working fine beacause it works pushing data to db
+Main issue is result app is not able to fetching data from db because data is designed in result app as "synchronus commmunication" in which directly data connect to app via socket means hardwire.
+
+eg Server.js (socket connection)
+
+---------------------------------------
+io.set('transports', ['polling']);
+
+var port = process.env.PORT || 4000;
+
+io.sockets.on('connection', function (socket) {
+
+  socket.emit('message', { text : 'Welcome!' });
+
+  socket.on('subscribe', function (data) {
+    socket.join(data.channel);
+  });
+--------------------------------
+
+in this we delete db pod then new pod is create , it wait for socket connection to result app
+
+So delete the db pod we lost the previous data and logs due to socket connection established and no exception handling provision is not given in server.js.
+
+
+
+2.Solution of result pod working
+
+There is 2 way for result pod working
+1. In designing the data for result app we should give exception handling for better connection establishment , In other hand worker pod scenerio we have given exception handling so that time no problem occured.
+
+2.Restarting the result pod :- in this scenerio we delete result the result pod and reresh the process and then delete the db pod .
+
+
+
+3. Process
+
+[root@ip-172-31-35-2 k8s-specifications]# kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-vgcw6        1/2     Running   0          9s
+redis-868d64d78-b96lk     1/2     Running   0          8s
+result-5d57b59f4b-7pbzs   1/2     Running   0          8s
+vote-94849dc97-jcbbj      1/2     Running   0          8s
+worker-dd46d7584-p7zf8    1/2     Running   0          8s
+
+kubectl delete pods db-b54cd94f4-vgcw6
+
+[root@ip-172-31-35-2 k8s-specifications]# kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-996dq        2/2     Running   0          22s
+redis-868d64d78-b96lk     2/2     Running   0          88s
+result-5d57b59f4b-7pbzs   2/2     Running   0          88s
+vote-94849dc97-jcbbj      2/2     Running   0          88s
+worker-dd46d7584-p7zf8    2/2     Running   1          88s
+
+kubectl delete pods db-b54cd94f4-996dq
+
+
+
+
