@@ -1,0 +1,28 @@
+rolling update
+lets have have 7 pods -vi
+
+v2 introduce reduce 1 pods from vi
+increase 2 in v2 and decrease 1 pods from v1 
+same process done
+higher availability access the website 
+
+kubectl run ngnix-kalyan --image=nginx
+
+kubectl get po
+kubectl get po
+kubectl get rs
+kubectl delete po delete pod name
+kubectl get po
+that time 
+minmum ready second 10
+desired
+update this time 
+via this steps
+
+kubectl explain deploy.spec.minReadySeconds
+kubectl patch deployment kubia -p '{"spec": {"minReadySeconds": 10}}'
+kubectl describe deploy kubia
+kubectl set image deployment kubia nodejs=luksa/kubia:v3
+
+
+new version overlapping old pods
